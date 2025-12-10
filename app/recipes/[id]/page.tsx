@@ -1,10 +1,12 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
-import Image from "next/image";
 import { Recipe } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Clock, Users, Flame, ChevronLeft, ChefHat } from "lucide-react";
+import Image from "next/image";
+import FavoriteButton from "@/components/FavoriteButton";
 
 async function getRecipe(id: string): Promise<Recipe> {
   const res = await fetch(`https://gourmet.cours.quimerch.com/recipes/${id}`, {
@@ -15,13 +17,41 @@ async function getRecipe(id: string): Promise<Recipe> {
   return res.json();
 }
 
+async function checkIfFavorite(recipeId: string): Promise<boolean> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("session_token")?.value;
+
+  if (!token) return false;
+
+  try {
+    const res = await fetch("https://gourmet.cours.quimerch.com/favorites", {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return false;
+
+    const favorites: Recipe[] = await res.json();
+    return favorites.some((fav) => fav.id === recipeId);
+  } catch (_e) {
+    return false;
+  }
+}
+
 export default async function RecipePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const recipe = await getRecipe(id);
+
+  const recipeData = getRecipe(id);
+  const isFavoriteData = checkIfFavorite(id);
+
+  const [recipe, isFavorite] = await Promise.all([recipeData, isFavoriteData]);
+
+  const cookieStore = await cookies();
+  const isLoggedIn = cookieStore.has("session_token");
 
   return (
     <div className="min-h-screen p-6 md:p-12 max-w-6xl mx-auto space-y-8">
@@ -34,12 +64,13 @@ export default async function RecipePage({
       </Link>
 
       <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-emerald-900/50 group h-80 md:h-[400px]">
+        <div className="absolute inset-0 bg-emerald-900/40 mix-blend-multiply z-10" />
         {recipe.image_url ? (
           <Image
             src={recipe.image_url}
             alt={recipe.name}
+            className="w-full h-full object-cover"
             fill
-            className="object-cover"
           />
         ) : (
           <div className="w-full h-full bg-emerald-950 flex items-center justify-center">
@@ -87,6 +118,14 @@ export default async function RecipePage({
               </div>
             </CardContent>
           </Card>
+
+          <div className="grid">
+            <FavoriteButton
+              recipeId={recipe.id}
+              initialIsFavorite={isFavorite}
+              isLoggedIn={isLoggedIn}
+            />
+          </div>
         </div>
 
         <div className="lg:col-span-2">
