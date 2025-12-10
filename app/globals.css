@@ -4,9 +4,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* --- PALETTE DARK LEAVES (Format HSL pour Shadcn) --- */
-  --background: 160 30% 8%;      /* Vert très sombre */
-  --foreground: 150 20% 90%;     /* Blanc cassé vert */
+  --background: 160 30% 8%;
+  --foreground: 150 20% 90%;
 
   --card: 160 30% 10%;
   --card-foreground: 150 20% 90%;
@@ -14,7 +13,7 @@
   --popover: 160 30% 10%;
   --popover-foreground: 150 20% 90%;
 
-  --primary: 142 70% 45%;        /* Vert émeraude vibrant */
+  --primary: 142 70% 45%;
   --primary-foreground: 144 100% 95%;
 
   --secondary: 160 20% 20%;
@@ -37,9 +36,6 @@
 }
 
 @theme {
-  /* --- MAPPING SHADCN --- */
-  /* On connecte les classes Tailwind (ex: bg-primary) aux variables CSS ci-dessus */
-  
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 
@@ -72,7 +68,6 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
   
-  /* Animations (souvent utilisées par Shadcn) */
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
