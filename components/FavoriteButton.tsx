@@ -32,6 +32,7 @@ export default function FavoriteButton({
     setIsLoading(true);
 
     const result = await toggleFavoriteAction(recipeId, !newState);
+    console.log("Toggle favorite result:", result);
 
     if (result?.error) {
       setIsFavorite(!newState);

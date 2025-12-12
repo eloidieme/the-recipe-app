@@ -23,11 +23,31 @@ async function checkIfFavorite(recipeId: string): Promise<boolean> {
 
   if (!token) return false;
 
+  const userId = await fetch("https://gourmet.cours.quimerch.com/me", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json, application/xml",
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => data.id)
+    .catch(() => null);
+
+  if (!userId) return false;
+
   try {
-    const res = await fetch("https://gourmet.cours.quimerch.com/favorites", {
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `https://gourmet.cours.quimerch.com/users/${userId}/favorites`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        cache: "no-store",
+      }
+    );
+    console.log("Favorites fetch response:", await res.json());
 
     if (!res.ok) return false;
 
