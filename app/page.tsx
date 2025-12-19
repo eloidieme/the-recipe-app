@@ -27,14 +27,24 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen p-8 md:p-12 space-y-8">
-      <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-500 pb-2">
-          Gourmet Hunter
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl">
-          Discover the best recipes on Earth.
-        </p>
-      </div>
+      <section className="relative w-full h-[400px] flex items-center justify-center rounded-xl overflow-hidden mb-12 shadow-2xl">
+        <Image
+          src="/cuisine.jpeg"
+          alt="Delicious cuisine banner"
+          fill
+          className="object-cover object-top brightness-[0.4]"
+          priority
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
+        />
+        <div className="relative z-10 flex flex-col items-center justify-center space-y-4 text-center p-4">
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-white pb-2 drop-shadow-lg">
+            Gourmet Hunter
+          </h1>
+          <p className="text-emerald-50 text-lg max-w-2xl drop-shadow-md font-medium">
+            Discover the best recipes on Earth.
+          </p>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recipes.map((recipe) => (
