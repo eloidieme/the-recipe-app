@@ -14,7 +14,7 @@ Une application moderne de gestion de recettes de cuisine, développée avec Nex
 - **Framework** : Next.js 15 (App Router)
 - **Langage** : TypeScript
 - **Style** : Tailwind CSS v4 + Shadcn/UI + Lucide Icons
-- **Tests** : Jest + Testing Library + Playwright
+- **Tests** : Jest + Testing Library
 - **CI/CD** : GitHub Actions
 - **Conteneurisation** : Docker
 
@@ -45,9 +45,9 @@ L'application est accessible sur [http://localhost:3000](http://localhost:3000).
 
 ## Tests
 
-Le projet dispose d'une suite de tests complète couvrant les composants, les actions serveur et les parcours utilisateur.
+Le projet dispose d'une suite de tests couvrant les composants et les actions serveur.
 
-### Tests unitaires et d'intégration
+### Lancer les tests
 
 ```bash
 # Lancer tous les tests
@@ -60,21 +60,6 @@ npm run test:watch
 npm run test:coverage
 ```
 
-### Tests End-to-End (E2E)
-
-Les tests E2E utilisent Playwright pour simuler de vrais parcours utilisateur dans un navigateur.
-
-```bash
-# Installer les navigateurs (première fois)
-npx playwright install
-
-# Lancer les tests E2E
-npm run test:e2e
-
-# Avec interface graphique
-npm run test:e2e:ui
-```
-
 ### Structure des tests
 
 ```
@@ -82,10 +67,6 @@ __tests__/
   actions/          # Tests des server actions (login, logout, favoris)
   components/       # Tests unitaires des composants React
   integration/      # Tests d'intégration (formulaires, flux)
-e2e/
-  user-journey.spec.ts      # Parcours utilisateur complet
-  error-scenarios.spec.ts   # Gestion des erreurs
-  accessibility.spec.ts     # Accessibilité et navigation clavier
 ```
 
 ---
@@ -98,11 +79,6 @@ Le projet utilise GitHub Actions pour automatiser les vérifications à chaque p
 2. **Type Check** : Validation TypeScript
 3. **Tests Unitaires** : Exécution de Jest avec rapport de couverture
 4. **Build** : Construction de l'application
-5. **Tests E2E** : Exécution de Playwright
-
-Pour que le CI fonctionne, ajoutez ces secrets dans les paramètres du repository GitHub :
-
-- `NEXT_PUBLIC_API_URL` : URL de l'API backend
 
 ---
 
