@@ -1,4 +1,6 @@
 import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Recipe } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -8,13 +10,21 @@ import { Clock, Users, Flame, ChevronLeft, ChefHat } from "lucide-react";
 import Image from "next/image";
 import FavoriteButton from "@/components/FavoriteButton";
 
-async function getRecipe(id: string): Promise<Recipe> {
-  const res = await fetch(`https://gourmet.cours.quimerch.com/recipes/${id}`, {
-    cache: "no-store",
-    headers: { Accept: "application/json" },
-  });
-  if (!res.ok) throw new Error("Recipe not found");
-  return res.json();
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
+
+async function getRecipe(id: string): Promise<Recipe | null> {
+  try {
+    const res = await fetch(`${API_URL}/recipes/${id}`, {
+      next: { revalidate: 3600 },
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching recipe:", error);
+    return null;
+  }
 }
 
 async function checkIfFavorite(recipeId: string): Promise<boolean> {
@@ -23,31 +33,38 @@ async function checkIfFavorite(recipeId: string): Promise<boolean> {
 
   if (!token) return false;
 
-  const userId = await fetch("https://gourmet.cours.quimerch.com/me", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json, application/xml",
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => data.id)
-    .catch(() => null);
+  // Try to get username from cache first
+  let username = cookieStore.get("username")?.value;
 
-  if (!userId) return false;
+  // Fallback to API call if not cached
+  if (!username) {
+    const userData = await fetch(`${API_URL}/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json, application/xml",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => data.username)
+      .catch(() => null);
+
+    username = userData;
+  }
+
+  if (!username) return false;
 
   try {
     const res = await fetch(
-      `https://gourmet.cours.quimerch.com/users/${userId}/favorites`,
+      `${API_URL}/users/${username}/favorites`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-        cache: "no-store",
+        next: { revalidate: 60 },
       }
     );
-    console.log("Favorites fetch response:", await res.json());
 
     if (!res.ok) return false;
 
@@ -56,6 +73,27 @@ async function checkIfFavorite(recipeId: string): Promise<boolean> {
   } catch (_e) {
     return false;
   }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const recipe = await getRecipe(id);
+
+  if (!recipe) {
+    return {
+      title: "Recipe Not Found | Gourmet Hunter",
+      description: "The recipe you're looking for could not be found.",
+    };
+  }
+
+  return {
+    title: `${recipe.name} | Gourmet Hunter`,
+    description: recipe.description || `Discover how to make ${recipe.name}`,
+  };
 }
 
 export default async function RecipePage({
@@ -70,6 +108,10 @@ export default async function RecipePage({
 
   const [recipe, isFavorite] = await Promise.all([recipeData, isFavoriteData]);
 
+  if (!recipe) {
+    notFound();
+  }
+
   const cookieStore = await cookies();
   const isLoggedIn = cookieStore.has("session_token");
 
@@ -79,7 +121,7 @@ export default async function RecipePage({
         href="/"
         className="inline-flex items-center text-emerald-400 hover:text-emerald-300 transition-colors mb-4"
       >
-        <ChevronLeft size={20} />
+        <ChevronLeft size={20} aria-hidden="true" />
         <span className="ml-1 font-medium">Back to recipes</span>
       </Link>
 
@@ -91,10 +133,12 @@ export default async function RecipePage({
             alt={recipe.name}
             className="w-full h-full object-cover"
             fill
+            sizes="(max-width: 768px) 100vw, 1200px"
+            priority
           />
         ) : (
           <div className="w-full h-full bg-emerald-950 flex items-center justify-center">
-            <ChefHat size={80} className="text-emerald-800" />
+            <ChefHat size={80} className="text-emerald-800" aria-hidden="true" />
           </div>
         )}
         <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent p-8 z-20">
@@ -113,28 +157,28 @@ export default async function RecipePage({
             <CardContent className="p-6 space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <Clock size={20} className="text-emerald-400" />{" "}
+                  <Clock size={20} className="text-emerald-400" aria-hidden="true" />{" "}
                   <span>Total Time</span>
                 </div>
                 <span className="font-bold">
-                  {recipe.prep_time + recipe.cook_time} min
+                  {(recipe.prep_time || 0) + (recipe.cook_time || 0)} min
                 </span>
               </div>
               <Separator className="bg-white/10" />
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <Users size={20} className="text-emerald-400" />{" "}
+                  <Users size={20} className="text-emerald-400" aria-hidden="true" />{" "}
                   <span>Servings</span>
                 </div>
-                <span className="font-bold">{recipe.servings} ppl</span>
+                <span className="font-bold">{recipe.servings || 0} ppl</span>
               </div>
               <Separator className="bg-white/10" />
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <Flame size={20} className="text-orange-400" />{" "}
+                  <Flame size={20} className="text-orange-400" aria-hidden="true" />{" "}
                   <span>Calories</span>
                 </div>
-                <span className="font-bold">{recipe.calories} kcal</span>
+                <span className="font-bold">{recipe.calories || 0} kcal</span>
               </div>
             </CardContent>
           </Card>
@@ -152,7 +196,7 @@ export default async function RecipePage({
           <Card className="h-full bg-white/5 backdrop-blur-md border-white/10">
             <CardContent className="p-8">
               <h2 className="text-2xl font-semibold text-emerald-400 mb-6 flex items-center gap-2">
-                <ChefHat /> Instructions
+                <ChefHat aria-hidden="true" /> Instructions
               </h2>
               <div className="prose prose-invert prose-emerald max-w-none text-gray-300 leading-relaxed whitespace-pre-line text-lg">
                 {recipe.instructions}

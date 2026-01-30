@@ -13,13 +13,22 @@ import { Button } from "@/components/ui/button";
 import { Clock, Users, Flame } from "lucide-react";
 
 async function getRecipes(): Promise<Recipe[]> {
-  const res = await fetch("https://gourmet.cours.quimerch.com/recipes", {
-    cache: "no-store",
-    headers: { Accept: "application/json" },
-  });
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
+    const res = await fetch(`${API_URL}/recipes`, {
+      next: { revalidate: 3600 },
+      headers: { Accept: "application/json" },
+    });
 
-  if (!res.ok) throw new Error("Failed to fetch data");
-  return res.json();
+    if (!res.ok) {
+      console.error("Failed to fetch recipes:", res.status);
+      return [];
+    }
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching recipes:", error);
+    return [];
+  }
 }
 
 export default async function Home() {
@@ -27,7 +36,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen p-8 md:p-12 space-y-8">
-      <section className="relative w-full h-[400px] flex items-center justify-center rounded-xl overflow-hidden mb-12 shadow-2xl">
+      <section className="relative w-full h-[400px] flex items-center justify-center rounded-xl overflow-hidden mb-12 shadow-2xl" style={{ position: 'relative' }}>
         <Image
           src="/cuisine.jpeg"
           alt="Delicious cuisine banner"
@@ -46,8 +55,15 @@ export default async function Home() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {recipes.map((recipe) => (
+      {recipes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Flame size={64} className="text-emerald-600 mb-4" />
+          <h2 className="text-2xl font-bold text-emerald-100 mb-2">No recipes found</h2>
+          <p className="text-gray-400">Check back later for delicious recipes!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {recipes.map((recipe) => (
           <Card
             key={recipe.id}
             className="flex flex-col h-full bg-white/5 backdrop-blur-md border-white/10 hover:border-emerald-500/50 hover:bg-white/10 transition-all duration-300 group"
@@ -59,6 +75,7 @@ export default async function Home() {
                   alt={recipe.name}
                   fill
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-emerald-700">
@@ -83,11 +100,13 @@ export default async function Home() {
               <div className="flex items-center justify-between text-xs text-emerald-200/60 font-medium">
                 <div className="flex items-center gap-1">
                   <Clock size={14} />
-                  <span>{recipe.prep_time + recipe.cook_time} min</span>
+                  <span>
+                    {(recipe.prep_time || 0) + (recipe.cook_time || 0)} min
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Users size={14} />
-                  <span>{recipe.servings} ppl.</span>
+                  <span>{recipe.servings || 0} ppl.</span>
                 </div>
               </div>
             </CardContent>
@@ -102,7 +121,8 @@ export default async function Home() {
             </CardFooter>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
     </main>
   );
 }

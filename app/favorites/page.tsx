@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Recipe } from "@/types";
 import {
@@ -14,6 +15,14 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Clock, Users, Flame, Heart, AlertCircle } from "lucide-react";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
+
+export const metadata: Metadata = {
+  title: "My Favorites | Gourmet Hunter",
+  description: "Your collection of favorite recipes.",
+};
+
 async function getFavorites(): Promise<Recipe[]> {
   const cookieStore = await cookies();
   const token = cookieStore.get("session_token")?.value;
@@ -22,20 +31,27 @@ async function getFavorites(): Promise<Recipe[]> {
     return [];
   }
 
-  const res = await fetch("https://gourmet.cours.quimerch.com/favorites", {
-    headers: {
-      Authorization: `Bearer ${token}`, // Le sésame !
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+  try {
+    const res = await fetch(`${API_URL}/favorites`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      next: { revalidate: 60 },
+    });
 
-  if (!res.ok) {
-    if (res.status === 401) return [];
-    throw new Error("Failed to fetch favorites");
+    if (!res.ok) {
+      if (res.status === 401) return [];
+      console.error("Failed to fetch favorites:", res.status);
+      return [];
+    }
+
+    const data: Array<{ recipe: Recipe }> = await res.json();
+    return data.map((item) => item.recipe);
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    return [];
   }
-
-  return res.json();
 }
 
 export default async function FavoritesPage() {
@@ -52,14 +68,14 @@ export default async function FavoritesPage() {
     <div className="min-h-screen p-8 md:p-12 space-y-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-3 bg-pink-500/20 rounded-full text-pink-500">
-          <Heart size={32} fill="currentColor" />
+          <Heart size={32} fill="currentColor" aria-hidden="true" />
         </div>
         <h1 className="text-4xl font-bold text-white">My Favorites</h1>
       </div>
 
       {recipes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/5">
-          <AlertCircle size={48} className="text-emerald-500/50 mb-4" />
+          <AlertCircle size={48} className="text-emerald-500/50 mb-4" aria-hidden="true" />
           <h2 className="text-xl text-emerald-100 font-semibold">
             No favorites yet
           </h2>
@@ -86,11 +102,13 @@ export default async function FavoritesPage() {
                   <Image
                     src={recipe.image_url}
                     alt={recipe.name}
+                    fill
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-emerald-700">
-                    <Flame size={40} />
+                    <Flame size={40} aria-hidden="true" />
                   </div>
                 )}
                 <Badge className="absolute top-3 right-3 bg-pink-600 text-white border-0">
@@ -111,12 +129,14 @@ export default async function FavoritesPage() {
 
                 <div className="flex items-center justify-between text-xs text-emerald-200/60 font-medium">
                   <div className="flex items-center gap-1">
-                    <Clock size={14} />
-                    <span>{recipe.prep_time + recipe.cook_time} min</span>
+                    <Clock size={14} aria-hidden="true" />
+                    <span>
+                      {(recipe.prep_time || 0) + (recipe.cook_time || 0)} min
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Users size={14} />
-                    <span>{recipe.servings} ppl</span>
+                    <Users size={14} aria-hidden="true" />
+                    <span>{recipe.servings || 0} ppl</span>
                   </div>
                 </div>
               </CardContent>

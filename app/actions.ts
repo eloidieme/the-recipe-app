@@ -4,37 +4,110 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-export async function loginAction(
-  prevState: { message?: string } | null,
-  formData: FormData
-) {
-  const username = formData.get("username") as string;
-  const password = formData.get("password") as string;
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
 
-  const res = await fetch("https://gourmet.cours.quimerch.com/login", {
-    method: "POST",
-    headers: {
-      Accept: "application/json, application/xml",
-      "Content-Type": "*/*",
-    },
-    body: JSON.stringify({ username, password }),
-  });
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 
-  if (!res.ok) {
-    return { message: "Invalid credentials. Please try again." };
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const attempt = loginAttempts.get(identifier);
+
+  if (!attempt || now > attempt.resetAt) {
+    // First attempt or window expired
+    loginAttempts.set(identifier, { count: 1, resetAt: now + 15 * 60 * 1000 }); // 15 min window
+    return true;
   }
 
-  const data = await res.json();
-  const token = data.token;
+  if (attempt.count >= 5) {
+    // Too many attempts
+    return false;
+  }
 
-  const cookieStore = await cookies();
+  attempt.count++;
+  return true;
+}
 
-  cookieStore.set("session_token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-    path: "/",
-  });
+function clearRateLimit(identifier: string) {
+  loginAttempts.delete(identifier);
+}
+
+export async function loginAction(
+  prevState: { message?: string } | null,
+  formData: FormData,
+) {
+  const username = formData.get("username");
+  const password = formData.get("password");
+
+  if (!username || typeof username !== "string" || username.trim() === "") {
+    return { message: "Username is required." };
+  }
+
+  if (!password || typeof password !== "string" || password.trim() === "") {
+    return { message: "Password is required." };
+  }
+
+  if (username.length < 3) {
+    return { message: "Username must be at least 3 characters." };
+  }
+
+  if (password.length < 6) {
+    return { message: "Password must be at least 6 characters." };
+  }
+
+  if (!checkRateLimit(username)) {
+    return {
+      message: "Too many login attempts. Please try again in 15 minutes.",
+    };
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json, application/xml",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!res.ok) {
+      return { message: "Invalid credentials. Please try again." };
+    }
+
+    const data = await res.json();
+
+    if (!data.token) {
+      return { message: "Login failed. No token received." };
+    }
+
+    const token = data.token;
+
+    const cookieStore = await cookies();
+
+    cookieStore.set("session_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: "/",
+    });
+
+    cookieStore.set("username", username, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: "/",
+    });
+
+    clearRateLimit(username);
+  } catch (error) {
+    console.error("Login error:", error);
+    return {
+      message: "Unable to connect to the server. Please try again later.",
+    };
+  }
 
   redirect("/");
 }
@@ -42,46 +115,53 @@ export async function loginAction(
 export async function logoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete("session_token");
+  cookieStore.delete("username");
   redirect("/login");
 }
 
 export async function toggleFavoriteAction(
   recipeId: string,
-  isCurrentlyFavorite: boolean
+  isCurrentlyFavorite: boolean,
 ) {
   const cookieStore = await cookies();
   const token = cookieStore.get("session_token")?.value;
 
   if (!token) return { error: "Unauthorized" };
 
-  const username = await fetch("https://gourmet.cours.quimerch.com/me", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json, application/xml",
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => data.username)
-    .catch(() => null);
+  let username = cookieStore.get("username")?.value;
+
+  if (!username) {
+    username = await fetch(`${API_URL}/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json, application/xml",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => data.username)
+      .catch(() => null);
+  }
 
   if (!username) return { error: "Unauthorized" };
 
   try {
+    let res;
+
     if (isCurrentlyFavorite) {
-      await fetch(
-        `https://gourmet.cours.quimerch.com/users/${username}/favorites?recipe_id=${recipeId}`,
+      res = await fetch(
+        `${API_URL}/users/${username}/favorites?recipeID=${recipeId}`,
         {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json, application/xml",
           },
-        }
+        },
       );
     } else {
-      await fetch(
-        `https://gourmet.cours.quimerch.com/users/${username}/favorites?recipe_id=${recipeId}`,
+      res = await fetch(
+        `${API_URL}/users/${username}/favorites?recipeID=${recipeId}`,
         {
           method: "POST",
           headers: {
@@ -89,8 +169,13 @@ export async function toggleFavoriteAction(
             Authorization: `Bearer ${token}`,
             Accept: "application/json, application/xml",
           },
-        }
+        },
       );
+    }
+
+    if (!res.ok) {
+      console.error("Failed to toggle favorite:", res.status);
+      return { error: "Failed to update favorite" };
     }
 
     revalidatePath("/favorites");
