@@ -86,15 +86,9 @@ export async function loginAction(
 
     const cookieStore = await cookies();
 
-    cookieStore.set("session_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: "/",
-    });
-
-    cookieStore.set("username", username, {
+    // Store both token and username in a single cookie to avoid
+    // multiple Set-Cookie header issues in some production environments
+    cookieStore.set("session", JSON.stringify({ token, username }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -115,6 +109,8 @@ export async function loginAction(
 
 export async function logoutAction() {
   const cookieStore = await cookies();
+  cookieStore.delete("session");
+  // Also delete old cookies for backwards compatibility
   cookieStore.delete("session_token");
   cookieStore.delete("username");
   redirect("/login");
@@ -125,11 +121,31 @@ export async function toggleFavoriteAction(
   isCurrentlyFavorite: boolean,
 ) {
   const cookieStore = await cookies();
-  const token = cookieStore.get("session_token")?.value;
+
+  // Try new combined session cookie first, fall back to old separate cookies
+  const sessionCookie = cookieStore.get("session")?.value;
+  let token: string | undefined;
+  let username: string | undefined;
+
+  if (sessionCookie) {
+    try {
+      const session = JSON.parse(sessionCookie);
+      token = session.token;
+      username = session.username;
+    } catch {
+      // Invalid JSON, ignore
+    }
+  }
+
+  // Fallback to old cookies for backwards compatibility
+  if (!token) {
+    token = cookieStore.get("session_token")?.value;
+  }
+  if (!username) {
+    username = cookieStore.get("username")?.value;
+  }
 
   if (!token) return { error: "Unauthorized" };
-
-  let username = cookieStore.get("username")?.value;
 
   if (!username) {
     username = await fetchWithRetry(`${API_URL}/me`, {

@@ -25,8 +25,29 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const isLoggedIn = cookieStore.has("session_token");
-  const username = cookieStore.get("username")?.value;
+
+  // Try new combined session cookie first, fall back to old separate cookies
+  const sessionCookie = cookieStore.get("session")?.value;
+  let isLoggedIn = false;
+  let username: string | undefined;
+
+  if (sessionCookie) {
+    try {
+      const session = JSON.parse(sessionCookie);
+      isLoggedIn = !!session.token;
+      username = session.username;
+    } catch {
+      // Invalid JSON, ignore
+    }
+  }
+
+  // Fallback to old cookies for backwards compatibility
+  if (!isLoggedIn) {
+    isLoggedIn = cookieStore.has("session_token");
+  }
+  if (!username) {
+    username = cookieStore.get("username")?.value;
+  }
 
   return (
     <html lang="en">

@@ -32,12 +32,31 @@ async function getRecipe(id: string): Promise<Recipe | null> {
 
 async function checkIfFavorite(recipeId: string): Promise<boolean> {
   const cookieStore = await cookies();
-  const token = cookieStore.get("session_token")?.value;
+
+  // Try new combined session cookie first, fall back to old cookies
+  const sessionCookie = cookieStore.get("session")?.value;
+  let token: string | undefined;
+  let username: string | undefined;
+
+  if (sessionCookie) {
+    try {
+      const session = JSON.parse(sessionCookie);
+      token = session.token;
+      username = session.username;
+    } catch {
+      // Invalid JSON, ignore
+    }
+  }
+
+  // Fallback to old cookies
+  if (!token) {
+    token = cookieStore.get("session_token")?.value;
+  }
+  if (!username) {
+    username = cookieStore.get("username")?.value;
+  }
 
   if (!token) return false;
-
-  // Try to get username from cache first
-  let username = cookieStore.get("username")?.value;
 
   // Fallback to API call if not cached
   if (!username) {
@@ -113,7 +132,24 @@ export default async function RecipePage({
   }
 
   const cookieStore = await cookies();
-  const isLoggedIn = cookieStore.has("session_token");
+
+  // Try new combined session cookie first, fall back to old cookie
+  const sessionCookie = cookieStore.get("session")?.value;
+  let isLoggedIn = false;
+
+  if (sessionCookie) {
+    try {
+      const session = JSON.parse(sessionCookie);
+      isLoggedIn = !!session.token;
+    } catch {
+      // Invalid JSON, ignore
+    }
+  }
+
+  // Fallback to old cookie
+  if (!isLoggedIn) {
+    isLoggedIn = cookieStore.has("session_token");
+  }
 
   return (
     <div className="min-h-screen p-6 md:p-12 max-w-6xl mx-auto space-y-8">

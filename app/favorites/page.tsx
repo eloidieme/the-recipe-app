@@ -28,7 +28,24 @@ export const metadata: Metadata = {
 
 async function getFavorites(): Promise<Recipe[]> {
   const cookieStore = await cookies();
-  const token = cookieStore.get("session_token")?.value;
+
+  // Try new combined session cookie first, fall back to old cookie
+  const sessionCookie = cookieStore.get("session")?.value;
+  let token: string | undefined;
+
+  if (sessionCookie) {
+    try {
+      const session = JSON.parse(sessionCookie);
+      token = session.token;
+    } catch {
+      // Invalid JSON, ignore
+    }
+  }
+
+  // Fallback to old cookie
+  if (!token) {
+    token = cookieStore.get("session_token")?.value;
+  }
 
   if (!token) {
     return [];
@@ -59,9 +76,26 @@ async function getFavorites(): Promise<Recipe[]> {
 
 export default async function FavoritesPage() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("session_token");
 
-  if (!token) {
+  // Try new combined session cookie first, fall back to old cookie
+  const sessionCookie = cookieStore.get("session")?.value;
+  let hasToken = false;
+
+  if (sessionCookie) {
+    try {
+      const session = JSON.parse(sessionCookie);
+      hasToken = !!session.token;
+    } catch {
+      // Invalid JSON, ignore
+    }
+  }
+
+  // Fallback to old cookie
+  if (!hasToken) {
+    hasToken = cookieStore.has("session_token");
+  }
+
+  if (!hasToken) {
     redirect("/login");
   }
 

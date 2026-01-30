@@ -188,7 +188,7 @@ describe("Server Actions", () => {
     });
 
     describe("Cookie Management", () => {
-      it("sets session cookie on successful login", async () => {
+      it("sets combined session cookie on successful login", async () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({ token: "test-token" }),
@@ -205,34 +205,8 @@ describe("Server Actions", () => {
         }
 
         expect(mockCookieStore.set).toHaveBeenCalledWith(
-          "session_token",
-          "test-token",
-          expect.objectContaining({
-            httpOnly: true,
-            path: "/",
-          }),
-        );
-      });
-
-      it("sets username cookie on successful login", async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: () => Promise.resolve({ token: "test-token" }),
-        });
-
-        const formData = new FormData();
-        formData.set("username", "testuser");
-        formData.set("password", "password123");
-
-        try {
-          await loginAction(null, formData);
-        } catch {
-          // Redirect throws
-        }
-
-        expect(mockCookieStore.set).toHaveBeenCalledWith(
-          "username",
-          "testuser",
+          "session",
+          JSON.stringify({ token: "test-token", username: "testuser" }),
           expect.objectContaining({
             httpOnly: true,
             path: "/",
@@ -269,13 +243,19 @@ describe("Server Actions", () => {
       (cookies as jest.Mock).mockResolvedValue(mockCookieStore);
     });
 
-    it("deletes session_token cookie", async () => {
+    it("deletes session cookie", async () => {
+      await logoutAction();
+
+      expect(mockCookieStore.delete).toHaveBeenCalledWith("session");
+    });
+
+    it("deletes old session_token cookie for backwards compatibility", async () => {
       await logoutAction();
 
       expect(mockCookieStore.delete).toHaveBeenCalledWith("session_token");
     });
 
-    it("deletes username cookie", async () => {
+    it("deletes old username cookie for backwards compatibility", async () => {
       await logoutAction();
 
       expect(mockCookieStore.delete).toHaveBeenCalledWith("username");
@@ -297,11 +277,13 @@ describe("Server Actions", () => {
     };
 
     beforeEach(() => {
+      // Reset mock implementation before each test
+      mockCookieStore.get.mockReset();
       (cookies as jest.Mock).mockResolvedValue(mockCookieStore);
     });
 
     describe("Authentication", () => {
-      it("returns unauthorized when no token", async () => {
+      it("returns unauthorized when no session cookie", async () => {
         mockCookieStore.get.mockReturnValue(undefined);
 
         const result = await toggleFavoriteAction("recipe-123", false);
@@ -309,10 +291,14 @@ describe("Server Actions", () => {
         expect(result).toEqual({ error: "Unauthorized" });
       });
 
-      it("returns unauthorized when no username and /me fails", async () => {
+      it("returns unauthorized when no username in session and /me fails", async () => {
+        // First call for "session" cookie - has token but no username
         mockCookieStore.get
-          .mockReturnValueOnce({ value: "test-token" }) // session_token
-          .mockReturnValueOnce(undefined); // username
+          .mockReturnValueOnce({
+            value: JSON.stringify({ token: "test-token" }),
+          })
+          .mockReturnValueOnce(undefined) // session_token fallback
+          .mockReturnValueOnce(undefined); // username fallback
 
         mockFetch.mockRejectedValueOnce(new Error("API error"));
 
@@ -324,9 +310,19 @@ describe("Server Actions", () => {
 
     describe("Add to Favorites", () => {
       beforeEach(() => {
-        mockCookieStore.get
-          .mockReturnValueOnce({ value: "test-token" })
-          .mockReturnValueOnce({ value: "testuser" });
+        // Use mockReturnValue which gets cleared by jest.clearAllMocks()
+        mockCookieStore.get.mockReturnValue(undefined);
+        mockCookieStore.get.mockImplementation((key: string) => {
+          if (key === "session") {
+            return {
+              value: JSON.stringify({
+                token: "test-token",
+                username: "testuser",
+              }),
+            };
+          }
+          return undefined;
+        });
       });
 
       it("calls POST endpoint to add favorite", async () => {
@@ -367,9 +363,18 @@ describe("Server Actions", () => {
 
     describe("Remove from Favorites", () => {
       beforeEach(() => {
-        mockCookieStore.get
-          .mockReturnValueOnce({ value: "test-token" })
-          .mockReturnValueOnce({ value: "testuser" });
+        // Mock get to return the right cookie based on key
+        mockCookieStore.get.mockImplementation((key: string) => {
+          if (key === "session") {
+            return {
+              value: JSON.stringify({
+                token: "test-token",
+                username: "testuser",
+              }),
+            };
+          }
+          return undefined;
+        });
       });
 
       it("calls DELETE endpoint to remove favorite", async () => {
@@ -401,9 +406,18 @@ describe("Server Actions", () => {
 
     describe("Error Handling", () => {
       beforeEach(() => {
-        mockCookieStore.get
-          .mockReturnValueOnce({ value: "test-token" })
-          .mockReturnValueOnce({ value: "testuser" });
+        // Mock get to return the right cookie based on key
+        mockCookieStore.get.mockImplementation((key: string) => {
+          if (key === "session") {
+            return {
+              value: JSON.stringify({
+                token: "test-token",
+                username: "testuser",
+              }),
+            };
+          }
+          return undefined;
+        });
       });
 
       it("returns error when API responds with error", async () => {
@@ -424,10 +438,14 @@ describe("Server Actions", () => {
     });
 
     describe("Username Fallback", () => {
-      it("fetches username from /me if not in cookies", async () => {
+      it("fetches username from /me if not in session cookie", async () => {
+        // Session cookie with token but no username
         mockCookieStore.get
-          .mockReturnValueOnce({ value: "test-token" })
-          .mockReturnValueOnce(undefined); // No username in cookies
+          .mockReturnValueOnce({
+            value: JSON.stringify({ token: "test-token" }),
+          })
+          .mockReturnValueOnce(undefined) // session_token fallback
+          .mockReturnValueOnce(undefined); // username fallback
 
         mockFetch
           .mockResolvedValueOnce({
