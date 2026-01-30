@@ -55,16 +55,13 @@ async function checkIfFavorite(recipeId: string): Promise<boolean> {
   if (!username) return false;
 
   try {
-    const res = await fetch(
-      `${API_URL}/users/${username}/favorites`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-        next: { revalidate: 60 },
-      }
-    );
+    const res = await fetch(`${API_URL}/users/${username}/favorites`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      next: { revalidate: 60 },
+    });
 
     if (!res.ok) return false;
 
@@ -138,7 +135,11 @@ export default async function RecipePage({
           />
         ) : (
           <div className="w-full h-full bg-emerald-950 flex items-center justify-center">
-            <ChefHat size={80} className="text-emerald-800" aria-hidden="true" />
+            <ChefHat
+              size={80}
+              className="text-emerald-800"
+              aria-hidden="true"
+            />
           </div>
         )}
         <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent p-8 z-20">
@@ -157,7 +158,11 @@ export default async function RecipePage({
             <CardContent className="p-6 space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <Clock size={20} className="text-emerald-400" aria-hidden="true" />{" "}
+                  <Clock
+                    size={20}
+                    className="text-emerald-400"
+                    aria-hidden="true"
+                  />{" "}
                   <span>Total Time</span>
                 </div>
                 <span className="font-bold">
@@ -167,7 +172,11 @@ export default async function RecipePage({
               <Separator className="bg-white/10" />
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <Users size={20} className="text-emerald-400" aria-hidden="true" />{" "}
+                  <Users
+                    size={20}
+                    className="text-emerald-400"
+                    aria-hidden="true"
+                  />{" "}
                   <span>Servings</span>
                 </div>
                 <span className="font-bold">{recipe.servings || 0} ppl</span>
@@ -175,7 +184,11 @@ export default async function RecipePage({
               <Separator className="bg-white/10" />
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <Flame size={20} className="text-orange-400" aria-hidden="true" />{" "}
+                  <Flame
+                    size={20}
+                    className="text-orange-400"
+                    aria-hidden="true"
+                  />{" "}
                   <span>Calories</span>
                 </div>
                 <span className="font-bold">{recipe.calories || 0} kcal</span>

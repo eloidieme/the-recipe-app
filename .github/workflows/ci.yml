@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+  NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://gourmet.cours.quimerch.com' }}
 
 jobs:
   lint:
