@@ -13,6 +13,8 @@ import FavoriteButton from "@/components/FavoriteButton";
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
 
+export const dynamic = 'force-dynamic';
+
 async function getRecipe(id: string): Promise<Recipe | null> {
   try {
     const res = await fetch(`${API_URL}/recipes/${id}`, {

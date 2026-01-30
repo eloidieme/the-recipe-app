@@ -18,6 +18,8 @@ import { Clock, Users, Flame, Heart, AlertCircle } from "lucide-react";
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "My Favorites | Gourmet Hunter",
   description: "Your collection of favorite recipes.",
