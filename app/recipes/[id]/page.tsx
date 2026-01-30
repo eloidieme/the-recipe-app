@@ -70,7 +70,7 @@ async function checkIfFavorite(recipeId: string): Promise<boolean> {
 
     const favorites: Recipe[] = await res.json();
     return favorites.some((fav) => fav.id === recipeId);
-  } catch (_e) {
+  } catch {
     return false;
   }
 }

@@ -90,7 +90,9 @@ describe("Server Actions", () => {
 
         const result = await loginAction(null, formData);
 
-        expect(result).toEqual({ message: "Username must be at least 3 characters." });
+        expect(result).toEqual({
+          message: "Username must be at least 3 characters.",
+        });
       });
 
       it("returns error when password is too short", async () => {
@@ -100,7 +102,9 @@ describe("Server Actions", () => {
 
         const result = await loginAction(null, formData);
 
-        expect(result).toEqual({ message: "Password must be at least 6 characters." });
+        expect(result).toEqual({
+          message: "Password must be at least 6 characters.",
+        });
       });
     });
 
@@ -128,8 +132,11 @@ describe("Server Actions", () => {
             headers: expect.objectContaining({
               "Content-Type": "application/json",
             }),
-            body: JSON.stringify({ username: "testuser", password: "password123" }),
-          })
+            body: JSON.stringify({
+              username: "testuser",
+              password: "password123",
+            }),
+          }),
         );
       });
 
@@ -145,7 +152,9 @@ describe("Server Actions", () => {
 
         const result = await loginAction(null, formData);
 
-        expect(result).toEqual({ message: "Invalid credentials. Please try again." });
+        expect(result).toEqual({
+          message: "Invalid credentials. Please try again.",
+        });
       });
 
       it("returns error when no token received", async () => {
@@ -201,7 +210,7 @@ describe("Server Actions", () => {
           expect.objectContaining({
             httpOnly: true,
             path: "/",
-          })
+          }),
         );
       });
 
@@ -227,7 +236,7 @@ describe("Server Actions", () => {
           expect.objectContaining({
             httpOnly: true,
             path: "/",
-          })
+          }),
         );
       });
 
@@ -326,13 +335,15 @@ describe("Server Actions", () => {
         await toggleFavoriteAction("recipe-123", false);
 
         expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining("/users/testuser/favorites?recipeID=recipe-123"),
+          expect.stringContaining(
+            "/users/testuser/favorites?recipeID=recipe-123",
+          ),
           expect.objectContaining({
             method: "POST",
             headers: expect.objectContaining({
               Authorization: "Bearer test-token",
             }),
-          })
+          }),
         );
       });
 
@@ -367,13 +378,15 @@ describe("Server Actions", () => {
         await toggleFavoriteAction("recipe-123", true);
 
         expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining("/users/testuser/favorites?recipeID=recipe-123"),
+          expect.stringContaining(
+            "/users/testuser/favorites?recipeID=recipe-123",
+          ),
           expect.objectContaining({
             method: "DELETE",
             headers: expect.objectContaining({
               Authorization: "Bearer test-token",
             }),
-          })
+          }),
         );
       });
 
@@ -433,7 +446,7 @@ describe("Server Actions", () => {
             headers: expect.objectContaining({
               Authorization: "Bearer test-token",
             }),
-          })
+          }),
         );
       });
     });

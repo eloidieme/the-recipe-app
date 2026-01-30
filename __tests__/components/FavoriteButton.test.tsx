@@ -1,8 +1,7 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FavoriteButton from "@/components/FavoriteButton";
 import { toggleFavoriteAction } from "@/app/actions";
-import { useRouter } from "next/navigation";
 
 // Mock the server action
 jest.mock("@/app/actions", () => ({
@@ -35,7 +34,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={true}
           isLoggedIn={true}
-        />
+        />,
       );
 
       expect(screen.getByRole("button", { pressed: true })).toBeInTheDocument();
@@ -48,10 +47,12 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
-      expect(screen.getByRole("button", { pressed: false })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { pressed: false }),
+      ).toBeInTheDocument();
       expect(screen.getByText("Add to Favorites")).toBeInTheDocument();
     });
 
@@ -61,7 +62,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -75,7 +76,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={true}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -91,7 +92,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={false}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -111,7 +112,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -130,7 +131,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={true}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -143,7 +144,10 @@ describe("FavoriteButton", () => {
 
     it("performs optimistic update", async () => {
       (toggleFavoriteAction as jest.Mock).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ success: true }), 100),
+          ),
       );
 
       render(
@@ -151,7 +155,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -169,7 +173,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -192,7 +196,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -213,7 +217,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -221,7 +225,9 @@ describe("FavoriteButton", () => {
 
       await waitFor(() => {
         expect(screen.getByRole("alert")).toBeInTheDocument();
-        expect(screen.getByText("Failed to update favorite")).toBeInTheDocument();
+        expect(
+          screen.getByText("Failed to update favorite"),
+        ).toBeInTheDocument();
       });
     });
 
@@ -235,7 +241,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -250,7 +256,10 @@ describe("FavoriteButton", () => {
   describe("Loading State", () => {
     it("shows loading spinner during transition", async () => {
       (toggleFavoriteAction as jest.Mock).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 500))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ success: true }), 500),
+          ),
       );
 
       render(
@@ -258,7 +267,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       const button = screen.getByRole("button");
@@ -276,7 +285,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={false}
           isLoggedIn={true}
-        />
+        />,
       );
 
       expect(screen.getByText("Add to Favorites")).toBeInTheDocument();
@@ -286,7 +295,7 @@ describe("FavoriteButton", () => {
           recipeId="123"
           initialIsFavorite={true}
           isLoggedIn={true}
-        />
+        />,
       );
 
       expect(screen.getByText("Saved to Favorites")).toBeInTheDocument();

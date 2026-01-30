@@ -17,7 +17,9 @@ describe("LogoutButton", () => {
     it("renders logout button correctly", () => {
       render(<LogoutButton />);
 
-      const button = screen.getByRole("button", { name: /log out of your account/i });
+      const button = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       expect(button).toBeInTheDocument();
       expect(screen.getByText("Logout")).toBeInTheDocument();
     });
@@ -34,30 +36,40 @@ describe("LogoutButton", () => {
     it("shows confirmation dialog on click", async () => {
       render(<LogoutButton />);
 
-      const button = screen.getByRole("button", { name: /log out of your account/i });
+      const button = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(button);
 
       expect(screen.getByRole("dialog")).toBeInTheDocument();
       expect(screen.getByText("Confirm Logout")).toBeInTheDocument();
       expect(
-        screen.getByText("Are you sure you want to log out of your account?")
+        screen.getByText("Are you sure you want to log out of your account?"),
       ).toBeInTheDocument();
     });
 
     it("shows Cancel and Yes, Logout buttons in dialog", async () => {
       render(<LogoutButton />);
 
-      const button = screen.getByRole("button", { name: /log out of your account/i });
+      const button = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(button);
 
-      expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Yes, Logout" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Cancel" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Yes, Logout" }),
+      ).toBeInTheDocument();
     });
 
     it("closes dialog when Cancel is clicked", async () => {
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(logoutButton);
 
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -71,7 +83,9 @@ describe("LogoutButton", () => {
     it("closes dialog when clicking outside (on overlay)", async () => {
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(logoutButton);
 
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -92,7 +106,9 @@ describe("LogoutButton", () => {
 
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(logoutButton);
 
       const confirmButton = screen.getByRole("button", { name: "Yes, Logout" });
@@ -106,7 +122,9 @@ describe("LogoutButton", () => {
     it("does not call logout action when cancelled", async () => {
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(logoutButton);
 
       const cancelButton = screen.getByRole("button", { name: "Cancel" });
@@ -119,12 +137,14 @@ describe("LogoutButton", () => {
   describe("Loading State", () => {
     it("shows loading state during logout", async () => {
       (logoutAction as jest.Mock).mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 500))
+        () => new Promise((resolve) => setTimeout(resolve, 500)),
       );
 
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(logoutButton);
 
       const confirmButton = screen.getByRole("button", { name: "Yes, Logout" });
@@ -138,19 +158,23 @@ describe("LogoutButton", () => {
 
     it("disables button during logout", async () => {
       (logoutAction as jest.Mock).mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 500))
+        () => new Promise((resolve) => setTimeout(resolve, 500)),
       );
 
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(logoutButton);
 
       const confirmButton = screen.getByRole("button", { name: "Yes, Logout" });
       await userEvent.click(confirmButton);
 
       await waitFor(() => {
-        const button = screen.getByRole("button", { name: /log out of your account/i });
+        const button = screen.getByRole("button", {
+          name: /log out of your account/i,
+        });
         expect(button).toBeDisabled();
       });
     });
@@ -162,7 +186,9 @@ describe("LogoutButton", () => {
 
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await userEvent.click(logoutButton);
 
       const confirmButton = screen.getByRole("button", { name: "Yes, Logout" });
@@ -170,7 +196,9 @@ describe("LogoutButton", () => {
 
       await waitFor(() => {
         expect(screen.getByRole("alert")).toBeInTheDocument();
-        expect(screen.getByText("Failed to log out. Please try again.")).toBeInTheDocument();
+        expect(
+          screen.getByText("Failed to log out. Please try again."),
+        ).toBeInTheDocument();
       });
     });
 
@@ -181,7 +209,9 @@ describe("LogoutButton", () => {
 
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await user.click(logoutButton);
 
       const confirmButton = screen.getByRole("button", { name: "Yes, Logout" });
@@ -207,12 +237,17 @@ describe("LogoutButton", () => {
       const user = userEvent.setup();
       render(<LogoutButton />);
 
-      const logoutButton = screen.getByRole("button", { name: /log out of your account/i });
+      const logoutButton = screen.getByRole("button", {
+        name: /log out of your account/i,
+      });
       await user.click(logoutButton);
 
       const dialog = screen.getByRole("dialog");
       expect(dialog).toHaveAttribute("aria-labelledby", "logout-dialog-title");
-      expect(dialog).toHaveAttribute("aria-describedby", "logout-dialog-description");
+      expect(dialog).toHaveAttribute(
+        "aria-describedby",
+        "logout-dialog-description",
+      );
     });
   });
 });

@@ -13,7 +13,7 @@ test.describe("Error Scenarios", () => {
 
       await expect(page.getByRole("alert")).toBeVisible();
       await expect(
-        page.getByText("Username must be at least 3 characters")
+        page.getByText("Username must be at least 3 characters"),
       ).toBeVisible();
     });
 
@@ -24,7 +24,7 @@ test.describe("Error Scenarios", () => {
 
       await expect(page.getByRole("alert")).toBeVisible();
       await expect(
-        page.getByText("Password must be at least 6 characters")
+        page.getByText("Password must be at least 6 characters"),
       ).toBeVisible();
     });
 
@@ -34,9 +34,7 @@ test.describe("Error Scenarios", () => {
       await page.getByRole("button", { name: "Sign In" }).click();
 
       await expect(page.getByRole("alert")).toBeVisible({ timeout: 10000 });
-      await expect(
-        page.getByText(/invalid credentials/i)
-      ).toBeVisible();
+      await expect(page.getByText(/invalid credentials/i)).toBeVisible();
     });
 
     test("clears password field on error", async ({ page }) => {
@@ -134,7 +132,7 @@ test.describe("Network Resilience", () => {
 
     // Page should still load eventually
     await expect(
-      page.getByRole("heading", { name: "Gourmet Hunter" })
+      page.getByRole("heading", { name: "Gourmet Hunter" }),
     ).toBeVisible({ timeout: 30000 });
   });
 });

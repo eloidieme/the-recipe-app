@@ -101,6 +101,7 @@ Le projet utilise GitHub Actions pour automatiser les vérifications à chaque p
 5. **Tests E2E** : Exécution de Playwright
 
 Pour que le CI fonctionne, ajoutez ces secrets dans les paramètres du repository GitHub :
+
 - `NEXT_PUBLIC_API_URL` : URL de l'API backend
 
 ---

@@ -1,7 +1,6 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import LoginPage from "@/app/login/page";
-import { loginAction } from "@/app/actions";
 
 // Mock the loginAction
 jest.mock("@/app/actions", () => ({
@@ -9,7 +8,6 @@ jest.mock("@/app/actions", () => ({
 }));
 
 // Mock useActionState to properly simulate the form state
-let mockFormAction: (formData: FormData) => void;
 let mockState: { message: string };
 let mockIsPending: boolean;
 
@@ -17,8 +15,8 @@ jest.mock("react", () => {
   const originalReact = jest.requireActual("react");
   return {
     ...originalReact,
-    useActionState: jest.fn((action, initialState) => {
-      mockFormAction = async (formData: FormData) => {
+    useActionState: jest.fn((action) => {
+      const mockFormAction = async (formData: FormData) => {
         mockIsPending = true;
         const result = await action(mockState, formData);
         mockState = result || { message: "" };
@@ -36,9 +34,6 @@ describe("LoginPage Integration", () => {
     mockIsPending = false;
   });
 
-  // Helper to get password input by ID instead of label (avoids conflict with "Show password" button)
-  const getPasswordInput = () => screen.getByRole("textbox", { hidden: true }) || document.getElementById("password");
-
   describe("Form Rendering", () => {
     it("renders login form with all elements", () => {
       render(<LoginPage />);
@@ -46,13 +41,17 @@ describe("LoginPage Integration", () => {
       expect(screen.getByText("Welcome Back")).toBeInTheDocument();
       expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
       expect(document.getElementById("password")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /sign in/i }),
+      ).toBeInTheDocument();
     });
 
     it("has proper placeholders", () => {
       render(<LoginPage />);
 
-      expect(screen.getByPlaceholderText("GourmetHunter99")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("GourmetHunter99"),
+      ).toBeInTheDocument();
     });
 
     it("has proper input attributes", () => {
@@ -78,10 +77,14 @@ describe("LoginPage Integration", () => {
     it("toggles password visibility when eye icon is clicked", async () => {
       render(<LoginPage />);
 
-      const passwordInput = document.getElementById("password") as HTMLInputElement;
+      const passwordInput = document.getElementById(
+        "password",
+      ) as HTMLInputElement;
       expect(passwordInput).toHaveAttribute("type", "password");
 
-      const toggleButton = screen.getByRole("button", { name: /show password/i });
+      const toggleButton = screen.getByRole("button", {
+        name: /show password/i,
+      });
       await userEvent.click(toggleButton);
 
       expect(passwordInput).toHaveAttribute("type", "text");
@@ -106,7 +109,9 @@ describe("LoginPage Integration", () => {
     it("allows typing in password field", async () => {
       render(<LoginPage />);
 
-      const passwordInput = document.getElementById("password") as HTMLInputElement;
+      const passwordInput = document.getElementById(
+        "password",
+      ) as HTMLInputElement;
       await userEvent.type(passwordInput, "password123");
 
       expect(passwordInput).toHaveValue("password123");
@@ -118,7 +123,7 @@ describe("LoginPage Integration", () => {
       render(<LoginPage />);
 
       // The ChefHat icon should be rendered
-      const iconContainer = document.querySelector('.bg-emerald-500\\/20');
+      const iconContainer = document.querySelector(".bg-emerald-500\\/20");
       expect(iconContainer).toBeInTheDocument();
     });
 
@@ -126,7 +131,9 @@ describe("LoginPage Integration", () => {
       render(<LoginPage />);
 
       expect(
-        screen.getByText("Enter your hunter credentials to access your recipes")
+        screen.getByText(
+          "Enter your hunter credentials to access your recipes",
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -145,7 +152,9 @@ describe("LoginPage Integration", () => {
     it("password toggle has aria-label", () => {
       render(<LoginPage />);
 
-      const toggleButton = screen.getByRole("button", { name: /show password/i });
+      const toggleButton = screen.getByRole("button", {
+        name: /show password/i,
+      });
       expect(toggleButton).toHaveAttribute("aria-label");
     });
   });

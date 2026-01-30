@@ -25,17 +25,17 @@ jest.mock("next/navigation", () => ({
 // Mock Next.js Image component
 jest.mock("next/image", () => ({
   __esModule: true,
-  default: (props) => {
+  default: (props: Record<string, unknown>) => {
     const { priority, fill, ...rest } = props;
     // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-    return <img {...rest} data-priority={priority} data-fill={fill} />;
+    return <img {...rest} data-priority={priority ? "true" : undefined} data-fill={fill ? "true" : undefined} />;
   },
 }));
 
 // Mock Next.js Link component
 jest.mock("next/link", () => ({
   __esModule: true,
-  default: ({ children, href, ...props }) => (
+  default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -49,13 +49,19 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 };
 
-// Suppress console errors during tests (optional - can be removed for debugging)
+// Suppress expected console.error during tests
 const originalError = console.error;
 beforeAll(() => {
-  console.error = (...args) => {
+  console.error = (...args: unknown[]) => {
+    const message = typeof args[0] === "string" ? args[0] : "";
+    // Suppress expected errors in tests
     if (
-      typeof args[0] === "string" &&
-      args[0].includes("Warning: ReactDOM.render")
+      message.includes("Warning: ReactDOM.render") ||
+      message.includes("Logout error:") ||
+      message.includes("Login error:") ||
+      message.includes("Failed to toggle favorite:") ||
+      message.includes("Error toggling favorite:") ||
+      message.includes("not wrapped in act")
     ) {
       return;
     }

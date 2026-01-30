@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,16 @@ interface NavbarProps {
 export default function Navbar({ isLoggedIn, username }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const prevPathnameRef = useRef(pathname);
 
   // Close mobile menu on route change
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
+    if (prevPathnameRef.current !== pathname && isMobileMenuOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsMobileMenuOpen(false);
+    }
+    prevPathnameRef.current = pathname;
+  }, [pathname, isMobileMenuOpen]);
 
   // Prevent scroll when mobile menu is open
   useEffect(() => {

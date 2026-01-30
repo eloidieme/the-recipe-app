@@ -7,7 +7,7 @@ test.describe("User Journey", () => {
     // Step 1: Visit home page and browse recipes
     await page.goto("/");
     await expect(
-      page.getByRole("heading", { name: "Gourmet Hunter" })
+      page.getByRole("heading", { name: "Gourmet Hunter" }),
     ).toBeVisible();
 
     // Check that recipes are displayed (or empty state)
@@ -39,12 +39,12 @@ test.describe("User Journey", () => {
 
     // Page should have the main heading
     await expect(
-      page.getByRole("heading", { name: "Gourmet Hunter" })
+      page.getByRole("heading", { name: "Gourmet Hunter" }),
     ).toBeVisible();
 
     // Page should have the banner section
     await expect(
-      page.getByText("Discover the best recipes on Earth")
+      page.getByText("Discover the best recipes on Earth"),
     ).toBeVisible();
   });
 
@@ -60,7 +60,9 @@ test.describe("User Journey", () => {
       const firstCard = recipeCards.first();
 
       // Each card should have a "See recipe" button
-      await expect(firstCard.getByRole("link", { name: /see recipe/i })).toBeVisible();
+      await expect(
+        firstCard.getByRole("link", { name: /see recipe/i }),
+      ).toBeVisible();
     }
   });
 
@@ -136,11 +138,11 @@ test.describe("Login Flow", () => {
 
     // Button should show loading state briefly
     // Note: This might be too fast to catch, but we try
-    await expect(
-      page.getByRole("button", { name: /logging in/i })
-    ).toBeVisible({ timeout: 1000 }).catch(() => {
-      // Loading state passed too quickly, which is fine
-    });
+    await expect(page.getByRole("button", { name: /logging in/i }))
+      .toBeVisible({ timeout: 1000 })
+      .catch(() => {
+        // Loading state passed too quickly, which is fine
+      });
   });
 });
 
@@ -160,12 +162,12 @@ test.describe("Navigation", () => {
 
     // Logo should be visible
     await expect(
-      page.getByRole("link", { name: /gourmet hunter home/i })
+      page.getByRole("link", { name: /gourmet hunter home/i }),
     ).toBeVisible();
 
     // Login button should be visible (when not logged in)
     await expect(
-      page.getByRole("link", { name: "Login" }).first()
+      page.getByRole("link", { name: "Login" }).first(),
     ).toBeVisible();
   });
 
@@ -196,7 +198,7 @@ test.describe("Mobile Navigation", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("button", { name: /open menu/i })
+      page.getByRole("button", { name: /open menu/i }),
     ).toBeVisible();
   });
 
@@ -208,7 +210,7 @@ test.describe("Mobile Navigation", () => {
 
     // Close button should be visible
     await expect(
-      page.getByRole("button", { name: /close menu/i })
+      page.getByRole("button", { name: /close menu/i }),
     ).toBeVisible();
 
     // Close menu
@@ -216,7 +218,7 @@ test.describe("Mobile Navigation", () => {
 
     // Open button should be visible again
     await expect(
-      page.getByRole("button", { name: /open menu/i })
+      page.getByRole("button", { name: /open menu/i }),
     ).toBeVisible();
   });
 

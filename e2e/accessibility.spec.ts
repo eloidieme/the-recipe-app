@@ -26,7 +26,7 @@ test.describe("Accessibility", () => {
       await page.keyboard.press("Tab");
       // Password toggle button
       await expect(
-        page.getByRole("button", { name: /show password/i })
+        page.getByRole("button", { name: /show password/i }),
       ).toBeFocused();
 
       await page.keyboard.press("Tab");
@@ -130,7 +130,7 @@ test.describe("Accessibility", () => {
 
       // Menu button should exist again
       await expect(
-        page.getByRole("button", { name: /open menu/i })
+        page.getByRole("button", { name: /open menu/i }),
       ).toBeVisible();
     });
 
@@ -203,7 +203,7 @@ test.describe("Accessibility", () => {
 
       // Page should still function
       await expect(
-        page.getByRole("heading", { name: "Gourmet Hunter" })
+        page.getByRole("heading", { name: "Gourmet Hunter" }),
       ).toBeVisible();
     });
   });

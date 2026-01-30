@@ -1,7 +1,6 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Navbar from "@/components/Navbar";
-import { usePathname } from "next/navigation";
 
 // Mock usePathname
 const mockUsePathname = jest.fn();
@@ -28,13 +27,17 @@ describe("Navbar", () => {
       render(<Navbar isLoggedIn={false} />);
 
       expect(screen.getByText("Gourmet Hunter")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /gourmet hunter home/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: /gourmet hunter home/i }),
+      ).toBeInTheDocument();
     });
 
     it("logo links to home page", () => {
       render(<Navbar isLoggedIn={false} />);
 
-      const logoLink = screen.getByRole("link", { name: /gourmet hunter home/i });
+      const logoLink = screen.getByRole("link", {
+        name: /gourmet hunter home/i,
+      });
       expect(logoLink).toHaveAttribute("href", "/");
     });
   });
@@ -50,13 +53,17 @@ describe("Navbar", () => {
     it("does not show favorites link when not authenticated", () => {
       render(<Navbar isLoggedIn={false} />);
 
-      expect(screen.queryByRole("link", { name: /favorites/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: /favorites/i }),
+      ).not.toBeInTheDocument();
     });
 
     it("does not show logout button when not authenticated", () => {
       render(<Navbar isLoggedIn={false} />);
 
-      expect(screen.queryByTestId("mock-logout-button")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("mock-logout-button"),
+      ).not.toBeInTheDocument();
     });
 
     it("does not show username when not authenticated", () => {
@@ -77,7 +84,9 @@ describe("Navbar", () => {
     it("shows favorites link when authenticated", () => {
       render(<Navbar isLoggedIn={true} username="testuser" />);
 
-      const favoritesLinks = screen.getAllByRole("link", { name: /favorites/i });
+      const favoritesLinks = screen.getAllByRole("link", {
+        name: /favorites/i,
+      });
       expect(favoritesLinks.length).toBeGreaterThan(0);
       expect(favoritesLinks[0]).toHaveAttribute("href", "/favorites");
     });
@@ -92,7 +101,9 @@ describe("Navbar", () => {
     it("does not show login button when authenticated", () => {
       render(<Navbar isLoggedIn={true} username="testuser" />);
 
-      expect(screen.queryByRole("link", { name: /^login$/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: /^login$/i }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -110,7 +121,9 @@ describe("Navbar", () => {
       const menuButton = screen.getByRole("button", { name: /open menu/i });
       await userEvent.click(menuButton);
 
-      expect(screen.getByRole("button", { name: /close menu/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /close menu/i }),
+      ).toBeInTheDocument();
     });
 
     it("closes mobile menu when close button is clicked", async () => {
@@ -122,7 +135,9 @@ describe("Navbar", () => {
       const closeButton = screen.getByRole("button", { name: /close menu/i });
       await userEvent.click(closeButton);
 
-      expect(screen.getByRole("button", { name: /open menu/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /open menu/i }),
+      ).toBeInTheDocument();
     });
 
     it("sets body overflow hidden when mobile menu is open", async () => {
@@ -164,7 +179,9 @@ describe("Navbar", () => {
       mockUsePathname.mockReturnValue("/");
       render(<Navbar isLoggedIn={true} username="testuser" />);
 
-      const logoLink = screen.getByRole("link", { name: /gourmet hunter home/i });
+      const logoLink = screen.getByRole("link", {
+        name: /gourmet hunter home/i,
+      });
       expect(logoLink).toHaveAttribute("aria-current", "page");
     });
 
@@ -172,7 +189,9 @@ describe("Navbar", () => {
       mockUsePathname.mockReturnValue("/favorites");
       render(<Navbar isLoggedIn={true} username="testuser" />);
 
-      const favoritesLinks = screen.getAllByRole("link", { name: /favorites/i });
+      const favoritesLinks = screen.getAllByRole("link", {
+        name: /favorites/i,
+      });
       expect(favoritesLinks[0]).toHaveAttribute("aria-current", "page");
     });
 
@@ -180,7 +199,9 @@ describe("Navbar", () => {
       mockUsePathname.mockReturnValue("/favorites");
       render(<Navbar isLoggedIn={true} username="testuser" />);
 
-      const logoLink = screen.getByRole("link", { name: /gourmet hunter home/i });
+      const logoLink = screen.getByRole("link", {
+        name: /gourmet hunter home/i,
+      });
       expect(logoLink).not.toHaveAttribute("aria-current");
     });
   });
@@ -215,12 +236,14 @@ describe("Navbar", () => {
 
       // Open mobile menu first (we'll check the effect)
       mockUsePathname.mockReturnValue("/login");
-      
+
       rerender(<Navbar isLoggedIn={false} />);
 
       // Menu should be closed after pathname change
       // This is implicitly tested by checking the button state
-      expect(screen.getByRole("button", { name: /open menu/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /open menu/i }),
+      ).toBeInTheDocument();
     });
   });
 });
