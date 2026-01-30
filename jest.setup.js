@@ -1,0 +1,68 @@
+import "@testing-library/jest-dom";
+
+// Mock Next.js router
+jest.mock("next/navigation", () => ({
+  useRouter() {
+    return {
+      push: jest.fn(),
+      refresh: jest.fn(),
+      pathname: "/",
+      back: jest.fn(),
+      forward: jest.fn(),
+      prefetch: jest.fn(),
+      replace: jest.fn(),
+    };
+  },
+  usePathname() {
+    return "/";
+  },
+  useSearchParams() {
+    return new URLSearchParams();
+  },
+  redirect: jest.fn(),
+}));
+
+// Mock Next.js Image component
+jest.mock("next/image", () => ({
+  __esModule: true,
+  default: (props) => {
+    const { priority, fill, ...rest } = props;
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+    return <img {...rest} data-priority={priority} data-fill={fill} />;
+  },
+}));
+
+// Mock Next.js Link component
+jest.mock("next/link", () => ({
+  __esModule: true,
+  default: ({ children, href, ...props }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+// Global test utilities
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Suppress console errors during tests (optional - can be removed for debugging)
+const originalError = console.error;
+beforeAll(() => {
+  console.error = (...args) => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes("Warning: ReactDOM.render")
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  console.error = originalError;
+});
