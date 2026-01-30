@@ -9,15 +9,16 @@ import { Separator } from "@/components/ui/separator";
 import { Clock, Users, Flame, ChevronLeft, ChefHat } from "lucide-react";
 import Image from "next/image";
 import FavoriteButton from "@/components/FavoriteButton";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 async function getRecipe(id: string): Promise<Recipe | null> {
   try {
-    const res = await fetch(`${API_URL}/recipes/${id}`, {
+    const res = await fetchWithRetry(`${API_URL}/recipes/${id}`, {
       next: { revalidate: 3600 },
       headers: { Accept: "application/json" },
     });
@@ -40,7 +41,7 @@ async function checkIfFavorite(recipeId: string): Promise<boolean> {
 
   // Fallback to API call if not cached
   if (!username) {
-    const userData = await fetch(`${API_URL}/me`, {
+    const userData = await fetchWithRetry(`${API_URL}/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -57,7 +58,7 @@ async function checkIfFavorite(recipeId: string): Promise<boolean> {
   if (!username) return false;
 
   try {
-    const res = await fetch(`${API_URL}/users/${username}/favorites`, {
+    const res = await fetchWithRetry(`${API_URL}/users/${username}/favorites`, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",

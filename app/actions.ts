@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
@@ -62,7 +63,7 @@ export async function loginAction(
   }
 
   try {
-    const res = await fetch(`${API_URL}/login`, {
+    const res = await fetchWithRetry(`${API_URL}/login`, {
       method: "POST",
       headers: {
         Accept: "application/json, application/xml",
@@ -131,7 +132,7 @@ export async function toggleFavoriteAction(
   let username = cookieStore.get("username")?.value;
 
   if (!username) {
-    username = await fetch(`${API_URL}/me`, {
+    username = await fetchWithRetry(`${API_URL}/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -149,7 +150,7 @@ export async function toggleFavoriteAction(
     let res;
 
     if (isCurrentlyFavorite) {
-      res = await fetch(
+      res = await fetchWithRetry(
         `${API_URL}/users/${username}/favorites?recipeID=${recipeId}`,
         {
           method: "DELETE",
@@ -160,7 +161,7 @@ export async function toggleFavoriteAction(
         },
       );
     } else {
-      res = await fetch(
+      res = await fetchWithRetry(
         `${API_URL}/users/${username}/favorites?recipeID=${recipeId}`,
         {
           method: "POST",

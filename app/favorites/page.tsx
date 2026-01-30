@@ -14,11 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Clock, Users, Flame, Heart, AlertCircle } from "lucide-react";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://gourmet.cours.quimerch.com";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "My Favorites | Gourmet Hunter",
@@ -34,7 +35,7 @@ async function getFavorites(): Promise<Recipe[]> {
   }
 
   try {
-    const res = await fetch(`${API_URL}/favorites`, {
+    const res = await fetchWithRetry(`${API_URL}/favorites`, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
@@ -77,7 +78,11 @@ export default async function FavoritesPage() {
 
       {recipes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/5">
-          <AlertCircle size={48} className="text-emerald-500/50 mb-4" aria-hidden="true" />
+          <AlertCircle
+            size={48}
+            className="text-emerald-500/50 mb-4"
+            aria-hidden="true"
+          />
           <h2 className="text-xl text-emerald-100 font-semibold">
             No favorites yet
           </h2>
