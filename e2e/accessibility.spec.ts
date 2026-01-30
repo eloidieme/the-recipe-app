@@ -17,11 +17,11 @@ test.describe("Accessibility", () => {
       await page.keyboard.press("Tab"); // Should reach login input or another nav element
 
       // Eventually we should be able to reach the username field
-      await page.getByLabel("Username").focus();
-      await expect(page.getByLabel("Username")).toBeFocused();
+      await page.locator("#username").focus();
+      await expect(page.locator("#username")).toBeFocused();
 
       await page.keyboard.press("Tab");
-      await expect(page.getByLabel("Password")).toBeFocused();
+      await expect(page.locator("#password")).toBeFocused();
 
       await page.keyboard.press("Tab");
       // Password toggle button
@@ -51,8 +51,8 @@ test.describe("Accessibility", () => {
     test("can submit form with Enter key", async ({ page }) => {
       await page.goto("/login");
 
-      await page.getByLabel("Username").fill("testuser");
-      await page.getByLabel("Password").fill("password123");
+      await page.locator("#username").fill("testuser");
+      await page.locator("#password").fill("password123");
 
       // Press Enter to submit
       await page.keyboard.press("Enter");
@@ -68,8 +68,8 @@ test.describe("Accessibility", () => {
       await page.goto("/login");
 
       // Inputs should be properly labeled
-      const usernameInput = page.getByLabel("Username");
-      const passwordInput = page.getByLabel("Password");
+      const usernameInput = page.locator("#username");
+      const passwordInput = page.locator("#password");
 
       await expect(usernameInput).toHaveAttribute("id", "username");
       await expect(passwordInput).toHaveAttribute("id", "password");
@@ -85,8 +85,8 @@ test.describe("Accessibility", () => {
     test("error messages have alert role", async ({ page }) => {
       await page.goto("/login");
 
-      await page.getByLabel("Username").fill("ab");
-      await page.getByLabel("Password").fill("password123");
+      await page.locator("#username").fill("ab");
+      await page.locator("#password").fill("password123");
       await page.getByRole("button", { name: "Sign In" }).click();
 
       const alert = page.getByRole("alert");
@@ -137,15 +137,15 @@ test.describe("Accessibility", () => {
     test("error message focuses username input", async ({ page }) => {
       await page.goto("/login");
 
-      await page.getByLabel("Username").fill("testuser");
-      await page.getByLabel("Password").fill("wrongpassword");
+      await page.locator("#username").fill("testuser");
+      await page.locator("#password").fill("wrongpassword");
       await page.getByRole("button", { name: "Sign In" }).click();
 
       // Wait for error
       await expect(page.getByRole("alert")).toBeVisible({ timeout: 10000 });
 
       // Username should be focused (per implementation)
-      await expect(page.getByLabel("Username")).toBeFocused();
+      await expect(page.locator("#username")).toBeFocused();
     });
   });
 
@@ -187,7 +187,7 @@ test.describe("Accessibility", () => {
     test("focus indicators are visible", async ({ page }) => {
       await page.goto("/login");
 
-      const usernameInput = page.getByLabel("Username");
+      const usernameInput = page.locator("#username");
       await usernameInput.focus();
 
       // Check that the element has some focus styling

@@ -26,8 +26,8 @@ test.describe("User Journey", () => {
     await expect(page.getByText("Welcome Back")).toBeVisible();
 
     // Step 3: Submit login form with valid credentials
-    await page.getByLabel("Username").fill("testuser");
-    await page.getByLabel("Password").fill("password123");
+    await page.locator("#username").fill("testuser");
+    await page.locator("#password").fill("password123");
     await page.getByRole("button", { name: "Sign In" }).click();
 
     // Note: The actual redirect behavior depends on API response
@@ -88,13 +88,13 @@ test.describe("Login Flow", () => {
 
   test("displays login form correctly", async ({ page }) => {
     await expect(page.getByText("Welcome Back")).toBeVisible();
-    await expect(page.getByLabel("Username")).toBeVisible();
-    await expect(page.getByLabel("Password")).toBeVisible();
+    await expect(page.locator("#username")).toBeVisible();
+    await expect(page.locator("#password")).toBeVisible();
     await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
   });
 
   test("can toggle password visibility", async ({ page }) => {
-    const passwordInput = page.getByLabel("Password");
+    const passwordInput = page.locator("#password");
     await passwordInput.fill("testpassword");
 
     // Password should be hidden by default
@@ -116,13 +116,13 @@ test.describe("Login Flow", () => {
     await page.getByRole("button", { name: "Sign In" }).click();
 
     // Browser should show validation (we can check the required attribute)
-    await expect(page.getByLabel("Username")).toHaveAttribute("required", "");
-    await expect(page.getByLabel("Password")).toHaveAttribute("required", "");
+    await expect(page.locator("#username")).toHaveAttribute("required", "");
+    await expect(page.locator("#password")).toHaveAttribute("required", "");
   });
 
   test("displays error for invalid credentials", async ({ page }) => {
-    await page.getByLabel("Username").fill("invaliduser");
-    await page.getByLabel("Password").fill("wrongpassword");
+    await page.locator("#username").fill("invaliduser");
+    await page.locator("#password").fill("wrongpassword");
     await page.getByRole("button", { name: "Sign In" }).click();
 
     // Wait for error message to appear
@@ -130,8 +130,8 @@ test.describe("Login Flow", () => {
   });
 
   test("shows loading state during submission", async ({ page }) => {
-    await page.getByLabel("Username").fill("testuser");
-    await page.getByLabel("Password").fill("password123");
+    await page.locator("#username").fill("testuser");
+    await page.locator("#password").fill("password123");
 
     // Start submission
     await page.getByRole("button", { name: "Sign In" }).click();

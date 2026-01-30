@@ -7,8 +7,8 @@ test.describe("Error Scenarios", () => {
     });
 
     test("shows error for short username", async ({ page }) => {
-      await page.getByLabel("Username").fill("ab");
-      await page.getByLabel("Password").fill("password123");
+      await page.locator("#username").fill("ab");
+      await page.locator("#password").fill("password123");
       await page.getByRole("button", { name: "Sign In" }).click();
 
       await expect(page.getByRole("alert")).toBeVisible();
@@ -18,8 +18,8 @@ test.describe("Error Scenarios", () => {
     });
 
     test("shows error for short password", async ({ page }) => {
-      await page.getByLabel("Username").fill("validuser");
-      await page.getByLabel("Password").fill("12345");
+      await page.locator("#username").fill("validuser");
+      await page.locator("#password").fill("12345");
       await page.getByRole("button", { name: "Sign In" }).click();
 
       await expect(page.getByRole("alert")).toBeVisible();
@@ -29,8 +29,8 @@ test.describe("Error Scenarios", () => {
     });
 
     test("shows error for invalid credentials", async ({ page }) => {
-      await page.getByLabel("Username").fill("nonexistentuser");
-      await page.getByLabel("Password").fill("wrongpassword123");
+      await page.locator("#username").fill("nonexistentuser");
+      await page.locator("#password").fill("wrongpassword123");
       await page.getByRole("button", { name: "Sign In" }).click();
 
       await expect(page.getByRole("alert")).toBeVisible({ timeout: 10000 });
@@ -38,27 +38,27 @@ test.describe("Error Scenarios", () => {
     });
 
     test("clears password field on error", async ({ page }) => {
-      await page.getByLabel("Username").fill("testuser");
-      await page.getByLabel("Password").fill("wrongpassword");
+      await page.locator("#username").fill("testuser");
+      await page.locator("#password").fill("wrongpassword");
       await page.getByRole("button", { name: "Sign In" }).click();
 
       // Wait for error
       await expect(page.getByRole("alert")).toBeVisible({ timeout: 10000 });
 
       // Password should be cleared
-      await expect(page.getByLabel("Password")).toHaveValue("");
+      await expect(page.locator("#password")).toHaveValue("");
     });
 
     test("applies error styling to input fields", async ({ page }) => {
-      await page.getByLabel("Username").fill("testuser");
-      await page.getByLabel("Password").fill("wrongpassword");
+      await page.locator("#username").fill("testuser");
+      await page.locator("#password").fill("wrongpassword");
       await page.getByRole("button", { name: "Sign In" }).click();
 
       // Wait for error
       await expect(page.getByRole("alert")).toBeVisible({ timeout: 10000 });
 
       // Input fields should have error styling (border-red class)
-      const usernameInput = page.getByLabel("Username");
+      const usernameInput = page.locator("#username");
       await expect(usernameInput).toHaveClass(/border-red/);
     });
   });
@@ -101,22 +101,22 @@ test.describe("Form Validation", () => {
   test("username field has minlength validation", async ({ page }) => {
     await page.goto("/login");
 
-    const usernameInput = page.getByLabel("Username");
+    const usernameInput = page.locator("#username");
     await expect(usernameInput).toHaveAttribute("minlength", "3");
   });
 
   test("password field has minlength validation", async ({ page }) => {
     await page.goto("/login");
 
-    const passwordInput = page.getByLabel("Password");
+    const passwordInput = page.locator("#password");
     await expect(passwordInput).toHaveAttribute("minlength", "6");
   });
 
   test("both fields are required", async ({ page }) => {
     await page.goto("/login");
 
-    await expect(page.getByLabel("Username")).toHaveAttribute("required", "");
-    await expect(page.getByLabel("Password")).toHaveAttribute("required", "");
+    await expect(page.locator("#username")).toHaveAttribute("required", "");
+    await expect(page.locator("#password")).toHaveAttribute("required", "");
   });
 });
 
