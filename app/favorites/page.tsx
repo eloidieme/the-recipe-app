@@ -40,7 +40,7 @@ async function getFavorites(): Promise<Recipe[]> {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
       },
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
 
     if (!res.ok) {

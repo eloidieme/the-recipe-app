@@ -63,13 +63,13 @@ async function checkIfFavorite(recipeId: string): Promise<boolean> {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
       },
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
 
     if (!res.ok) return false;
 
-    const favorites: Recipe[] = await res.json();
-    return favorites.some((fav) => fav.id === recipeId);
+    const favorites: Array<{ recipe: Recipe }> = await res.json();
+    return favorites.some((fav) => fav.recipe.id === recipeId);
   } catch {
     return false;
   }
